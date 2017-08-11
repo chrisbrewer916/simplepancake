@@ -159,12 +159,6 @@ function GameAddFields() {
   );
 }
 
-var games = [{
-  id: 1, name: 'Checkers', rating: 0, plays: 10
-}, {
-  id: 2, name: 'Chess', rating: 1, plays: 5
-}];
-
 var GameList = function (_React$Component3) {
   _inherits(GameList, _React$Component3);
 
@@ -189,17 +183,32 @@ var GameList = function (_React$Component3) {
     value: function loadData() {
       var _this4 = this;
 
-      setTimeout(function () {
-        _this4.setState({ games: games });
-      }, 500);
+      fetch('/api/games').then(function (response) {
+        return response.json();
+      }).then(function (data) {
+        console.log("Total count of records: ", data._metadata.total_count);
+        _this4.setState({ games: data.records });
+      }).catch(function (err) {
+        console.log(err);
+      });
     }
   }, {
     key: "addGame",
     value: function addGame(newGame) {
-      var newGames = this.state.games.slice();
-      newGame.id = this.state.games.length + 1;
-      newGames.push(newGame);
-      this.setState({ games: newGames });
+      var _this5 = this;
+
+      fetch('/api/games', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newGame)
+      }).then(function (response) {
+        return response.json();
+      }).then(function (updatedGame) {
+        var newGames = _this5.state.games.concat(updatedGame);
+        _this5.setState({ games: newGames });
+      }).catch(function (err) {
+        alert("Error in sending data to server: " + err.message);
+      });
     }
   }, {
     key: "render",

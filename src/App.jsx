@@ -13,7 +13,6 @@ class GameRow extends React.Component {
       </tr>
     )
   }
-
 }
 
 class GameTable extends React.Component {
@@ -76,16 +75,6 @@ function GameAddFields() {
   );
 }
 
-
-const games = [
-  {
-    id: 1, name: 'Checkers', rating: 0, plays: 10,
-  },
-  {
-    id: 2, name: 'Chess', rating: 1, plays: 5,
-  },
-];
-
 class GameList extends React.Component {
 
   constructor() {
@@ -100,16 +89,27 @@ class GameList extends React.Component {
   }
 
   loadData() {
-    setTimeout(() => {
-      this.setState({ games: games });
-    }, 500);
+    fetch('/api/games').then(response => response.json()
+    ).then(data => {
+      console.log("Total count of records: ", data._metadata.total_count);
+      this.setState({ games: data.records });
+    }).catch(err => {
+      console.log(err);
+    });
   }
 
   addGame(newGame) {
-    const newGames = this.state.games.slice();
-    newGame.id = this.state.games.length + 1;
-    newGames.push(newGame);
-    this.setState({ games: newGames });
+    fetch('/api/games', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newGame),
+    }).then(response => response.json()
+    ).then(updatedGame => {
+      const newGames = this.state.games.concat(updatedGame);
+      this.setState({ games: newGames });
+    }).catch(err => {
+      alert("Error in sending data to server: " + err.message);
+    });
   }
 
   render() {
